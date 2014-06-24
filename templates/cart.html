@@ -1,0 +1,11 @@
+{% extends 'base.html' %}
+{% block body %}
+<table class="table table-striped">
+    <tr><th>Melon Name</th><th>Quantity</th><th>Price</th><th>Total</th></tr>
+    {% for item in cart_items %}
+    <tr><td>{{item.name}}</td><td>{{item.quantity}}</td><td>{{item.price}}</td><td>$15.00</td></tr>
+    {% endfor %}
+</table>
+<h3>Total: $27.00</h3>
+<a href="/checkout" class="btn btn-large btn-primary">Check Out</a>
+{% endblock %}
