@@ -41,7 +41,8 @@ def shopping_cart():
         session['melon_cart'] = {}
 
     for melon_id in session['melon_cart']:
-        melon_list.append(model.get_melon_by_id(melon_id))
+        curr_melon = model.get_melon_by_id(melon_id)
+        melon_list.append(curr_melon)
 
     # create a list combining the melon attributes and count
     cart_items = []
@@ -52,12 +53,17 @@ def shopping_cart():
             "id" : melon_object.id,
             "price" : melon_object.price,
             "name" : melon_object.common_name,
-            "quantity" : session['melon_cart'][str(melon_object.id)]
+            "quantity" : session['melon_cart'][str(melon_object.id)],
+            "total" : int(melon_object.price) * int(session['melon_cart'][str(melon_object.id)])
         }
         cart_items.append(melon_attributes)
+    final_total = 0
+    for my_item_dict in cart_items:
+        my_total = my_item_dict.get("total")
+        final_total = my_total + final_total
 
-    print "cart items", cart_items
-    return render_template("cart.html", cart_items = cart_items)
+    #print "cart items", cart_items
+    return render_template("cart.html", cart_items = cart_items, final_total = final_total)
     
 @app.route("/add_to_cart/<int:id>")
 def add_to_cart(id):
@@ -74,9 +80,10 @@ def add_to_cart(id):
     id = str(id)
     if id in session['melon_cart']:
         print "HERE"
-        session['melon_cart'][id] += 1
+        session['melon_cart'][id] += 1  
     else:
         session['melon_cart'][id] = 1
+    flash("Successfully added melon to the cart %s" % id )
 
     return redirect('/cart')
 
@@ -88,6 +95,8 @@ def show_login():
 
 @app.route("/login", methods=["POST"])
 def process_login():
+    username = request.args.get("email")
+    print request.args
     """TODO: Receive the user's login credentials located in the 'request.form'
     dictionary, look up the user, and store them in the session."""
     return "Oops! This needs to be implemented"
