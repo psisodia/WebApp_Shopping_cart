@@ -21,8 +21,6 @@ def list_melons():
 
 @app.route("/melon/<int:id>")
 def show_melon(id):
-    """This page shows the details of a given melon, as well as giving an
-    option to buy the melon."""
     melon = model.get_melon_by_id(id)
     print melon
     return render_template("melon_details.html",
@@ -30,25 +28,24 @@ def show_melon(id):
 
 @app.route("/cart")
 def shopping_cart():
-    """TODO: Display the contents of the shopping cart. The shopping cart is a
-    list held in the session that contains all the melons to be added. Check
-    accompanying screenshots for details."""
-
+    #This code checks if shopping cart is empty, if so set this dictionary to empty
+    #So page does not throw error and display empty shopping cart
     melon_list = []
     print "session", session
 
     if session.get('melon_cart') == None:
         session['melon_cart'] = {}
-
+    #This block iterates through sessionmelon cart for each melon id 
+    #and creates a list of melon objects with all melon details pulled from Db.
     for melon_id in session['melon_cart']:
         curr_melon = model.get_melon_by_id(melon_id)
         melon_list.append(curr_melon)
 
-    # create a list combining the melon attributes and count
+    # This block itetrates through melon list for each melon object and adds each melon attribute to list
     cart_items = []
     for melon_object in melon_list:
-        # we want to get the melon id, the melon name, price and the count (located in session['melon_cart'])
 
+        # we want to get the melon id, the melon name, price and the count (located in session['melon_cart'])
         melon_attributes = {
             "id" : melon_object.id,
             "price" : melon_object.price,
@@ -57,6 +54,8 @@ def shopping_cart():
             "total" : int(melon_object.price) * int(session['melon_cart'][str(melon_object.id)])
         }
         cart_items.append(melon_attributes)
+
+    #This code calculates whole total of shopping cart
     final_total = 0
     for my_item_dict in cart_items:
         my_total = my_item_dict.get("total")
@@ -73,7 +72,7 @@ def add_to_cart(id):
     Intended behavior: when a melon is added to a cart, redirect them to the
     shopping cart page, while displaying the message
     "Successfully added to cart" """
-
+#This code saves melons in the shopping cart
     if session.get('melon_cart') == None:
         session['melon_cart'] = {}
 
@@ -95,12 +94,27 @@ def show_login():
 
 @app.route("/login", methods=["POST"])
 def process_login():
-    username = request.args.get("email")
-    print request.args
-    """TODO: Receive the user's login credentials located in the 'request.form'
-    dictionary, look up the user, and store them in the session."""
+    username = request.form.get("email")
+    password = request.form.get("password")
+    #Stores username, password collected from form and checks against Db.
+    cname = model.get_customer_by_email(username)
+    print cname.givenname
+
+    #if user exist in Db, sends them to logged in session, otherwise 
+    #sends them to melons page
+    if cname != None:
+        session['email'] = cname.email
+        print session['email']
+        flash("Successfully logged in %s" % cname.email)
+    return redirect("/melons")
+
     return "Oops! This needs to be implemented"
 
+@app.route("/logout")
+def process_logout():
+    del session['email']
+
+    return redirect("/melons")
 
 @app.route("/checkout")
 def checkout():
